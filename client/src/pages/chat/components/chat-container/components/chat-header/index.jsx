@@ -69,6 +69,7 @@ const ChatHeader = () => {
                                 )}
                             </Avatar>
                             {/* Space reserved for online status indicator */}
+                            {/* Space reserved for userTyping indicator */}
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="truncate max-w-[180px] md:max-w-[300px] text-white font-medium text-lg" aria-label="Chat User Name">
