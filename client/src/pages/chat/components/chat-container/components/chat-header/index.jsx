@@ -16,12 +16,20 @@ const getImageUrl = (imagePath) => {
 };
 
 const ChatHeader = () => {
-    const { closeChat, selectedChatData, selectedChatType, updateChannel } = useAppStore();
+    const {
+        closeChat,
+        selectedChatData,
+        selectedChatType,
+        updateChannel,
+        typingUserId,
+    } = useAppStore();
     const [showChannelDetails, setShowChannelDetails] = useState(false);
 
     if (!selectedChatData) {
         return null;
     }
+
+    const isTyping = selectedChatType === "contact" && typingUserId === selectedChatData._id;
 
     const handleChannelUpdate = (updatedChannel) => {
         updateChannel(updatedChannel);
@@ -69,7 +77,6 @@ const ChatHeader = () => {
                                 )}
                             </Avatar>
                             {/* Space reserved for online status indicator */}
-                            {/* Space reserved for userTyping indicator */}
                         </div>
                         <div className="min-w-0 flex-1">
                             <div className="truncate max-w-[180px] md:max-w-[300px] text-white font-medium text-lg" aria-label="Chat User Name">
@@ -85,7 +92,11 @@ const ChatHeader = () => {
                                     {selectedChatData.members?.length || 0} members
                                 </div>
                             )}
-                            {/* Space reserved for online status indicator */}
+                            {isTyping && (
+                                <div className="text-sm text-purple-400 italic animate-pulse">
+                                    Digitando...
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="flex items-center justify-center gap-3">

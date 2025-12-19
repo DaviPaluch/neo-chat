@@ -251,7 +251,6 @@ const MessageBar = () => {
                         }
 
                         if(!isTypingRef.current && value.trim().length > 0) {
-                            console.log('eu existo')
 
                             socket.emit("userTyping", {
                                 sender: userInfo.id,
