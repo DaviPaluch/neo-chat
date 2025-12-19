@@ -3,6 +3,8 @@
  * Zustand chat slice for chat-related state management
  */
 export const createChatSlice = (set, get) => ({
+    typingUserId: null,
+    isTyping: false,
     selectedChatType: undefined,
     selectedChatData: undefined,
     selectedChatMessages: [],
@@ -57,6 +59,8 @@ export const createChatSlice = (set, get) => ({
         selectedChatData: undefined,
         selectedChatType: undefined,
         selectedChatMessages: [],
+        typingUserId: null,
+        isTyping: false,
     }),
 
     addMessage: (message) => {
@@ -81,4 +85,15 @@ export const createChatSlice = (set, get) => ({
             ],
         });
     },
+    setUserTyping: (userId) =>
+        set({
+            typingUserId: userId,
+            isTyping: true,
+        }),
+
+    clearUserTyping: () =>
+        set({
+            typingUserId: null,
+            isTyping: false,
+        }),
 });
