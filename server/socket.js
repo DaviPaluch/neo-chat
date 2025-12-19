@@ -27,6 +27,28 @@ const setupSocket = (server) => {
     }
   };
 
+  const handleUserTyping = ({sender, recipient})=> {
+    const recipientSocketId = userSocketMap.get(recipient)
+
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit("userTyping", {
+        sender,
+        recipient,
+      })
+    }
+  }
+
+  const handleUserStopTyping = ({sender, recipient}) => {
+    const recipientSocketId = userSocketMap.get(recipient) 
+
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit("userStopTyping", {
+        sender,
+        recipient,
+      })
+    }
+  }
+
   const sendMessage = async (message) => {
     const senderSocketId = userSocketMap.get(message.sender);
     const recipientSocketId = userSocketMap.get(message.recipient);
@@ -112,6 +134,8 @@ const setupSocket = (server) => {
       console.log("User ID not provided during connection.");
     }
 
+    socket.on("userTyping", handleUserTyping);
+    socket.on("userStopTyping", handleUserStopTyping);
     socket.on("sendMessage", sendMessage);
     socket.on("send-channel-message", sendChannelMessage);
     socket.on("sendChannelMessage", sendChannelMessage); // Alternative event name

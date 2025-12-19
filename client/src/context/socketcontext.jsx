@@ -68,13 +68,60 @@ export const SocketProvider = ({ children }) => {
                 }
             };
 
+            const handleUserTyping = ({ sender, recipient }) => {
+
+                
+                const state = useAppStore.getState();
+                const {
+                    selectedChatType,
+                    selectedChatData,
+                    setUserTyping,
+                    userInfo,
+                } = state;
+
+                // Apenas chats diretos
+                if (selectedChatType !== "contact") return;
+                if (!selectedChatData) return;
+                
+                // Ignora eventos do próprio usuário
+                if (sender === userInfo.id) return;
+                
+                // Só mostra se o chat ativo for com esse usuário
+                if (selectedChatData._id === sender) {
+                    setUserTyping(sender);
+                }
+            };
+
+            const handleUserStopTyping = ({ sender, recipient }) => {
+                const state = useAppStore.getState();
+                const {
+                    selectedChatType,
+                    selectedChatData,
+                    clearUserTyping,
+                    userInfo,
+                } = state;
+
+                if (selectedChatType !== "contact") return;
+                if (!selectedChatData) return;
+
+                if (sender === userInfo.id) return;
+
+                if (selectedChatData._id === sender) {
+                    clearUserTyping();
+                }
+            };
+
             socket.current.on("receiveMessage", handleReceiveMessage);
             socket.current.on("receiveChannelMessage", handleReceiveChannelMessage);
+            socket.current.on("userTyping", handleUserTyping);
+            socket.current.on("userStopTyping", handleUserStopTyping);
 
             return () => {
                 if (socket.current) {
                     socket.current.off("receiveMessage", handleReceiveMessage);
                     socket.current.off("receiveChannelMessage", handleReceiveChannelMessage);
+                    socket.current.off("userTyping", handleUserTyping);
+                    socket.current.off("userStopTyping", handleUserStopTyping);
                     socket.current.disconnect();
                 }
             };

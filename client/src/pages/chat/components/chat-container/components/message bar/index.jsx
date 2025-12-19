@@ -23,6 +23,8 @@ const MessageBar = () => {
     } = useAppStore();
     const [message, setMessage] = useState("");
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+    const isTypingRef = useRef(false);
+    const typingTimeoutRef = useRef(null);
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -41,6 +43,8 @@ const MessageBar = () => {
     };
 
     const handleSendMessage = async () => {
+        emitStopTyping();
+
         if (!message.trim() || !socket || !userInfo || !selectedChatData) {
             console.log("❌ Cannot send message:", { 
                 hasMessage: !!message.trim(), 
@@ -194,6 +198,35 @@ const MessageBar = () => {
         }
     };
 
+    const emitStopTyping = () => {
+        if (
+            !isTypingRef.current ||
+            !socket ||
+            !userInfo ||
+            !selectedChatData ||
+            selectedChatType !== "contact"
+        ) {
+            return;
+        }
+
+        socket.emit("userStopTyping", {
+            sender: userInfo.id,
+            recipient: selectedChatData._id,
+        });
+
+        isTypingRef.current = false;
+    };
+
+    useEffect(() => {
+        return () => {
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+            emitStopTyping();
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return (
         <form
             className="w-full bg-gradient-to-r from-[#1a1b23] to-[#2a2b35] border-t border-[#3a3b45] flex items-center px-4 py-4 md:px-8 gap-3 md:gap-4 relative shadow-lg"
@@ -206,7 +239,35 @@ const MessageBar = () => {
                     className="flex-1 p-4 md:p-5 bg-transparent rounded-2xl focus:outline-none text-base md:text-lg placeholder:text-gray-400 text-white transition-all duration-200"
                     placeholder={selectedChatType === "channel" ? `Message #${selectedChatData?.name || 'channel'}` : "Digite sua mensagem..."}
                     value={message}
-                    onChange={e => setMessage(e.target.value)}
+                    onChange={e => {
+                        // setMessage(e.target.value)
+
+                        const value = e.target.value
+
+                        setMessage(value)
+                        
+                        if(!socket || !userInfo || !selectedChatData || selectedChatType !== "contact") {
+                            return;
+                        }
+
+                        if(!isTypingRef.current && value.trim().length > 0) {
+
+                            socket.emit("userTyping", {
+                                sender: userInfo.id,
+                                recipient: selectedChatData._id
+                            })
+                            isTypingRef.current = true
+                        }
+
+                        // Reset stop timeout
+                        if (typingTimeoutRef.current) {
+                            clearTimeout(typingTimeoutRef.current);
+                        }
+
+                        typingTimeoutRef.current = setTimeout(() => {
+                            emitStopTyping();
+                        }, 1000);
+                    }}
                     aria-label="Message input"
                     onKeyDown={handleKeyDown}
                 />
